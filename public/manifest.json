@@ -1,0 +1,17 @@
+{
+  "name": "OrbitSpeed",
+  "short_name": "OrbitSpeed",
+  "description": "Internet Speed Test powered by Cloudflare Edge",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060B18",
+  "theme_color": "#060B18",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
