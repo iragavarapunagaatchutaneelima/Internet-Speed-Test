@@ -146,6 +146,7 @@ body{
 
 /* ── Unit Toggle ── */
 .unit-toggle{
+  position:relative;z-index:10;
   display:flex;gap:2px;
   background:rgba(255,255,255,.04);
   border:1px solid rgba(255,255,255,.08);
@@ -284,6 +285,23 @@ body{
 .stat-card__sub{
   font-size:.75rem;font-weight:600;
   padding:2px 10px;border-radius:99px;
+}
+.stat-card--interactive{
+  cursor:pointer;
+}
+.stat-card--interactive:hover{
+  transform:translateY(-5px) !important;
+  background:rgba(0,212,255,.07) !important;
+  border-color:rgba(0,212,255,.3) !important;
+  box-shadow:0 20px 48px rgba(0,0,0,.45) !important;
+}
+.stat-card--active{
+  background:rgba(0,212,255,.09) !important;
+  border-color:rgba(0,212,255,.45) !important;
+  box-shadow:0 0 24px rgba(0,212,255,.2),0 16px 48px rgba(0,0,0,.45) !important;
+}
+.stat-card--active .stat-card__value{
+  color:#00d4ff !important;
 }
 
 /* ── Skeleton ── */

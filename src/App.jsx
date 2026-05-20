@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Download, Upload, Activity, Wifi } from 'lucide-react';
 
 import ErrorBoundary  from './components/ErrorBoundary';
@@ -24,12 +24,36 @@ function AppContent() {
 
   const { history, addResult, clearHistory } = useHistory();
   const [unit, setUnit] = useState('mbps');
+  const [gaugeMetric, setGaugeMetric] = useState('download'); // 'download' or 'upload'
+
+  const handleStart = useCallback(() => {
+    setGaugeMetric('download');
+    startTest();
+  }, [startTest]);
+
+  const handleReset = useCallback(() => {
+    setGaugeMetric('download');
+    reset();
+  }, [reset]);
+
+  // Developer verification log for unit state changes
+  useEffect(() => {
+    console.log('[OrbitSpeed] Unit changed to:', unit);
+  }, [unit]);
 
   useEffect(() => {
     if (phase === 'DONE' && download !== null && upload !== null) {
       addResult({ ping, download, upload, isp: connectionInfo?.isp || '' });
     }
   }, [phase, ping, download, upload, connectionInfo, addResult]);
+
+  // Determine which speed is shown on the gauge dial
+  const activeGaugeSpeed = useMemo(() => {
+    if (phase === 'DONE') {
+      return gaugeMetric === 'upload' ? (upload || 0) : (download || 0);
+    }
+    return currentSpeed || 0;
+  }, [phase, gaugeMetric, download, upload, currentSpeed]);
 
   const maxMbps = useMemo(() => {
     const top = Math.max(download || 0, upload || 0, currentSpeed || 0);
@@ -40,7 +64,7 @@ function AppContent() {
   }, [download, upload, currentSpeed]);
 
   const unitLabel    = getUnitLabel(unit);
-  const displaySpeed = formatSpeed(currentSpeed, unit);
+  const displaySpeed = formatSpeed(activeGaugeSpeed, unit);
 
   const isLoadingDl = isTesting && ['CONNECTING','PING'].includes(phase);
   const isLoadingUl = isTesting && ['CONNECTING','PING','DOWNLOAD'].includes(phase);
@@ -66,7 +90,7 @@ function AppContent() {
 
           <div className="gauge-wrap">
             <GaugeChart
-              speedMbps={currentSpeed}
+              speedMbps={activeGaugeSpeed}
               maxMbps={maxMbps}
               phase={phase}
               displayValue={displaySpeed}
@@ -92,7 +116,7 @@ function AppContent() {
 
           <UnitToggle unit={unit} onChange={setUnit}/>
 
-          <TestButton phase={phase} isTesting={isTesting} onStart={startTest} onStop={stopTest} onReset={reset}/>
+          <TestButton phase={phase} isTesting={isTesting} onStart={handleStart} onStop={stopTest} onReset={handleReset}/>
 
           {phase === 'ERROR' && error && (
             <div className="error-notice" role="alert">⚠️ {error}</div>
@@ -109,11 +133,15 @@ function AppContent() {
 
             <StatCard icon={<Download size={20}/>} label="Download"
               value={download !== null ? formatSpeed(download, unit) : null} unit={unitLabel}
-              loading={isLoadingDl}/>
+              loading={isLoadingDl}
+              active={phase === 'DONE' && gaugeMetric === 'download'}
+              onClick={phase === 'DONE' ? () => setGaugeMetric('download') : undefined}/>
 
             <StatCard icon={<Upload size={20}/>} label="Upload"
               value={upload !== null ? formatSpeed(upload, unit) : null} unit={unitLabel}
-              loading={isLoadingUl}/>
+              loading={isLoadingUl}
+              active={phase === 'DONE' && gaugeMetric === 'upload'}
+              onClick={phase === 'DONE' ? () => setGaugeMetric('upload') : undefined}/>
 
             {phase === 'DONE' && (
               <div className="stat-card stat-card--quality">
