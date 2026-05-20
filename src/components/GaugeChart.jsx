@@ -52,20 +52,31 @@ const GaugeChart = ({
   const needleTipX = cx + needleR * Math.cos(needleAngle);
   const needleTipY = cy - needleR * Math.sin(needleAngle);
 
-  // ALL 6 ticks: 0%, 20%, 40%, 60%, 80%, 100% — identical style
+  // ALL 6 ticks: 0%, 20%, 40%, 60%, 80%, 100% — identical style, scaled dynamically to active unit
   const allTicks = useMemo(() => {
     return [0, 0.2, 0.4, 0.6, 0.8, 1.0].map(t => {
       const ang = Math.PI - t * Math.PI;
       const cos = Math.cos(ang);
       const sin = Math.sin(ang);
+      const speedInMbps = maxMbps * t;
+      
+      let displayTickValue;
+      if (displayUnit === 'MB/s') {
+        displayTickValue = (speedInMbps / 8).toFixed(1);
+      } else if (displayUnit === 'KB/s') {
+        displayTickValue = Math.round((speedInMbps * 1000) / 8);
+      } else {
+        displayTickValue = Math.round(speedInMbps);
+      }
+
       return {
         inner: { x: cx + (R - 8)  * cos, y: cy - (R - 8)  * sin },
         outer: { x: cx + (R + 6)  * cos, y: cy - (R + 6)  * sin },
         label: { x: cx + (R + 24) * cos, y: cy - (R + 24) * sin },
-        value: Math.round(maxMbps * t),
+        value: displayTickValue,
       };
     });
-  }, [maxMbps]);
+  }, [maxMbps, displayUnit]);
 
   return (
     <div className="gauge-wrap" role="img" aria-label={`Speed: ${displayValue} ${displayUnit}`}>

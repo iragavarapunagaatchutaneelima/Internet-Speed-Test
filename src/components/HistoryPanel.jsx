@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Trash2, Clock } from 'lucide-react';
-import { formatTimestamp } from '../utils/formatters';
+import { formatTimestamp, formatSpeed } from '../utils/formatters';
 
-const HistoryPanel = ({ history = [], onClear }) => {
+const HistoryPanel = ({ history = [], onClear, unit = 'mbps', unitLabel = 'Mbps' }) => {
   const [open, setOpen] = useState(false);
   if (!history.length) return null;
 
@@ -38,8 +38,8 @@ const HistoryPanel = ({ history = [], onClear }) => {
             {history.map(e => (
               <div key={e.id} className="history-row" role="row">
                 <span className="h-time">{formatTimestamp(e.timestamp)}</span>
-                <span className="h-dl">{e.download?.toFixed(1) ?? '--'} Mbps</span>
-                <span className="h-ul">{e.upload?.toFixed(1) ?? '--'} Mbps</span>
+                <span className="h-dl">{formatSpeed(e.download, unit)} {unitLabel}</span>
+                <span className="h-ul">{formatSpeed(e.upload, unit)} {unitLabel}</span>
                 <span className="h-ping">{e.ping ?? '--'} ms</span>
                 <span className="h-isp">{e.isp || '—'}</span>
               </div>

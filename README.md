@@ -31,7 +31,7 @@ OrbitSpeed was designed to be more than just a speed test tool — it is a **pre
 | 📡 **ISP & Location Detection** | Automatically detects your ISP name, city, country, and IP address |
 | 📊 **Real-Time Speedometer** | Premium SVG semicircular gauge with smooth GPU-accelerated arc animation |
 | ⚡ **Ping Measurement** | 3-sample median ping with visual quality indicator (Excellent / Good / Fair / Poor) |
-| 🔄 **Unit Conversion** | Instantly toggle between Mbps, MB/s, and KB/s |
+| 🔄 **Universal Unit Conversion** | Instantly toggle between Mbps, MB/s, and KB/s with real-time scaling across the speedometer dial (ticks), stat cards, and persistent history panel |
 | 🎬 **Streaming Quality Estimator** | Platform-specific quality estimation for Netflix, YouTube, Video Calls, and Cloud Gaming |
 | 🏆 **Connection Grade (A–F)** | Weighted quality score based on download (40%), upload (30%), and ping (30%) |
 | 📜 **Persistent Test History** | Results saved to localStorage — survives page refreshes |

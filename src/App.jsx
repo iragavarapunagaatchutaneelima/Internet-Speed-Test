@@ -142,7 +142,7 @@ function AppContent() {
         )}
 
         {/* ── History ── */}
-        <HistoryPanel history={history} onClear={clearHistory}/>
+        <HistoryPanel history={history} onClear={clearHistory} unit={unit} unitLabel={unitLabel}/>
 
       </main>
 
