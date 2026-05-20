@@ -527,3 +527,31 @@ body{
   .hero-card{padding:1.75rem 1rem}
   .main{padding:1.5rem 1rem 4rem;gap:1.5rem}
 }
+
+/* ── GitHub Navbar Link ── */
+.navbar__github-link {
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.45rem;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  outline: none;
+}
+.navbar__github-link:hover {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+  transform: translateY(-1px);
+}
+.navbar__github-link:active {
+  transform: translateY(0);
+}
+.navbar__github-link svg {
+  display: block;
+}
