@@ -127,7 +127,7 @@ body{
 
 /* ── Gauge ── */
 .gauge-wrap{width:100%;max-width:380px;position:relative;will-change:transform;transform:translateZ(0)}
-.gauge-svg{width:100%;height:auto;display:block;overflow:visible}
+.gauge-svg{width:100%;height:auto;display:block;overflow:visible;pointer-events:none}
 
 /* ── ISP Strip ── */
 .isp-strip{
