@@ -1,148 +1,71 @@
-# OrbitSpeed — Full Code Walkthrough (Very Simple English)
+# OrbitSpeed — Code Walkthrough (Beginner-Friendly)
 
-This document explains the project in **very simple English**, aimed at a beginner who knows only basic programming.
-
-It is written as a **“walkthrough + line-by-line explanation”** of the important source files.
-
-> Notes about strange characters:
-> Some files currently contain weird symbols like `â€”`, `âœ“`, `â€¦`.
-> That usually happens because the file was saved with a different text encoding at some point.
-> The code still runs, but the text may look odd in some places.
+This document explains every important source file in simple English.
 
 ---
 
-## 0) Big Picture: What is this project?
+## 0. What Is This Project?
 
-OrbitSpeed is a **web app** that runs inside your browser (Chrome/Edge/Safari/Firefox).
+OrbitSpeed is a **web app** that measures your internet speed from your browser.
 
-What it does:
-- It measures **Ping** (how fast a tiny request returns).
-- It measures **Download speed** (how fast your browser can download bytes).
-- It measures **Upload speed** (how fast your browser can upload bytes).
-- It shows the results in a nice UI: a gauge (speedometer), cards, a quality grade, and a history list.
+It has **two modes**:
 
-What it is NOT:
-- It is **not** a backend server app.
-- It does **not** have a database by default.
-- It does **not** have login/authentication by default.
+| Mode | Stack | Run Command |
+|---|---|---|
+| **SPA mode** | React + Vite (frontend only) | `npm run dev` |
+| **Flask mode** | Python Flask + SQLite (full-stack) | `python app.py` |
 
-How it measures:
-- It talks to public endpoints:
-  - Cloudflare: `https://speed.cloudflare.com`
-  - IP/ISP lookup: `https://ipapi.co/json/`
-  - Upload fallback: `https://httpbin.org/post`
+It measures three things:
+- **Ping** — how long a tiny request takes to return (milliseconds)
+- **Download speed** — how fast bytes arrive at your browser (Mbps)
+- **Upload speed** — how fast your browser sends bytes to a server (Mbps)
 
-Deployment:
-- It builds into static files (HTML/CSS/JS).
-- Those files can be hosted on Vercel, Netlify, GitHub Pages, Nginx, etc.
+It talks to public endpoints:
+- `https://speed.cloudflare.com` — download, upload, ping
+- `https://ipapi.co/json/` — ISP + city + country + IP
+- `https://httpbin.org/post` — upload fallback (SPA mode only)
 
 ---
 
-## 1) Folder Map (what each folder is for)
+## 1. Folder Map
 
-- `.github/workflows/`  
-  GitHub Actions workflow (CI) for lint + build.
-
-- `public/`  
-  Static public files copied as-is into the final build.
-  Example: `manifest.json`, icons.
-
-- `src/`  
-  All real app code:
-  - `main.jsx` = entry point (starts React)
-  - `App.jsx` = main UI layout
-  - `components/` = UI building blocks
-  - `hooks/` = reusable “logic helpers”
-  - `utils/` = helper functions (formatting, speed-test engine)
-  - `index.css` = all styling
-  - `styles/design-tokens.css` = CSS variables (colors, spacing, etc.)
-
-- `dist/`  
-  The build output (generated). You normally do not edit this by hand.
-
----
-
-## 2) Frontend vs Backend (simple explanation)
-
-### Frontend (this project HAS this)
-Frontend is the part users see in a browser:
-- HTML = page structure
-- CSS = styling
-- JavaScript/React = behavior and UI changes
-
-This project is almost 100% frontend.
-
-### Backend (this project does NOT have this by default)
-Backend is usually:
-- a server you control
-- database
-- login sessions
-- APIs you own
-
-OrbitSpeed does not ship with a backend. It uses public services instead.
+```
+Internet-Speed-Test/
+├── src/                  ← All React frontend code
+│   ├── components/       ← UI building blocks (gauge, cards, history…)
+│   ├── hooks/            ← Logic helpers (useSpeedTest, useHistory)
+│   ├── utils/            ← Speed engine + formatters + quality definitions
+│   ├── styles/           ← CSS design tokens (colors, spacing, etc.)
+│   ├── App.jsx           ← Main layout: wires hooks → components
+│   ├── index.css         ← All component styles
+│   └── main.jsx          ← React entry point
+├── app.py                ← Flask web server + all REST API routes
+├── database.py           ← SQLite helpers (save/get/clear history)
+├── speed_utils.py        ← Python: quality score, streaming support, IP lookup
+├── templates/index.html  ← Jinja2 page served by Flask
+├── public/manifest.json  ← PWA "install as app" config
+├── index.html            ← Vite HTML entry (SPA mode)
+├── vite.config.js        ← Vite build config
+├── vercel.json           ← Vercel: SPA rewrites + cache + security headers
+└── Dockerfile            ← Multi-stage: Node build → Nginx serve
+```
 
 ---
 
-## 3) How the app runs (the “life story” of the app)
+## 2. The Test Phases (State Machine)
 
-1. User opens the website.
-2. Browser loads `index.html`.
-3. `index.html` loads `/src/main.jsx`.
-4. `main.jsx` starts React and renders `<App />`.
-5. `App.jsx` renders the UI:
-   - Navbar, Gauge, Start button, cards, history.
-6. User clicks “Start Speed Test”.
-7. `useSpeedTest()` starts:
-   - fetch connection info
-   - ping
-   - download
-   - upload
-8. UI updates as phases change.
-9. When done, result is saved in local history (`localStorage`).
+The app goes through phases in order:
+
+```
+IDLE → CONNECTING → PING → DOWNLOAD → UPLOAD → DONE
+                                              ↘ ERROR (if something fails)
+```
+
+The user can click **Stop** at any time → returns to `IDLE`.
 
 ---
 
-## 4) APIs used (simple list + what they do)
-
-### 4.1 Cloudflare Speed API (used for measurement)
-- Base: `https://speed.cloudflare.com`
-- Download: `GET /__down?bytes=...`
-  - Example: `/__down?bytes=10000000` means “send me 10 MB of data”.
-- Upload: `POST /__up`
-  - We send bytes, Cloudflare receives them.
-
-### 4.2 IP/ISP lookup API (used for showing ISP/location)
-- `GET https://ipapi.co/json/`
-  - Returns ISP/org name, city, country, IP, etc.
-
-### 4.3 Upload fallback API (only used if Cloudflare upload fails)
-- `POST https://httpbin.org/post`
-
-Important warning:
-- These are **third-party services**. If they rate-limit you or go down, some parts may fail.
-
----
-
-## 5) Security (what protects the app)
-
-This app includes basic security hardening:
-- **Content Security Policy (CSP)** in `index.html` and as headers in `vercel.json`.
-  - CSP limits what domains the app can load scripts/requests/images from.
-- **X-Frame-Options / frame-ancestors** to prevent clickjacking (being embedded in other pages).
-- **HSTS** so browsers prefer HTTPS.
-- **Permissions-Policy** to disable camera/microphone/geolocation by default.
-
----
-
-## 6) Code Walkthrough — Important Files
-
-Below, each file is explained in simple English.
-
----
-
-## File: `index.html` (HTML shell)
-
-This is the first file your browser sees.
+## 3. File: `index.html` (HTML Entry — SPA Mode)
 
 ```html
 <!doctype html>
@@ -150,717 +73,597 @@ This is the first file your browser sees.
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-```
-
-Line-by-line:
-- `<!doctype html>`: tells the browser “this is modern HTML”.
-- `<html lang="en">`: root element; language is English.
-- `<head>`: metadata for the page (not visible UI).
-- `<meta charset="UTF-8" />`: tells browser the character set.
-- `<meta name="viewport" ...>`: important for mobile screens so layout is correct.
-
-```html
-    <title>OrbitSpeed â€” Internet Speed Test</title>
-    <meta name="description" content="..." />
-```
-- `<title>`: browser tab title.
-- `description`: used by search engines and social share previews.
-
-```html
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; ..."/>
-```
-- This is CSP (security rule):
-  - `default-src 'self'`: only allow things from the same website by default.
-  - `script-src 'self'`: only scripts from this site.
-  - `style-src ... https://fonts.googleapis.com`: allow Google Fonts CSS.
-  - `font-src ... https://fonts.gstatic.com`: allow downloading font files.
-  - `img-src ... https://flagcdn.com`: allow country flags.
-  - `connect-src ...`: allow network requests to the speed test APIs.
-  - `frame-ancestors 'none'`: do not allow the app to be embedded as an iframe.
-
-```html
+    <title>OrbitSpeed — Internet Speed Test</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; ..." />
+  </head>
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
 ```
-- `<div id="root">`: where React will “mount” the app.
-- `<script type="module" ...>`: loads your React entry file.
+
+Line by line:
+- `<!doctype html>` — tells the browser this is modern HTML5.
+- `<meta charset="UTF-8">` — character encoding.
+- `<meta name="viewport">` — makes layout correct on mobile.
+- `<title>` — browser tab text.
+- `Content-Security-Policy` — security rule: restricts which domains scripts, fonts, and API calls can come from.
+- `<div id="root">` — the empty box where React draws the whole app.
+- `<script type="module" src="/src/main.jsx">` — loads the React app.
 
 ---
 
-## File: `src/main.jsx` (React entry point)
+## 4. File: `src/main.jsx` (React Entry Point)
 
-```js
+```jsx
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-```
-Line-by-line:
-- Import `StrictMode`: a React helper that warns about unsafe patterns in development.
-- Import `createRoot`: modern React rendering API.
-- Import `index.css`: loads all global styles.
-- Import `App`: main component.
 
-```js
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
 )
 ```
-Line-by-line:
-- `document.getElementById('root')`: finds the `<div id="root">` from `index.html`.
-- `createRoot(...).render(...)`: tells React to render UI into that div.
-- `<StrictMode>`: dev-only checks; does not change the production output.
-- `<App />`: your main application UI.
+
+Line by line:
+- `StrictMode` — React helper that warns about bad patterns in development only.
+- `createRoot` — modern React 18+ way to start rendering.
+- `import './index.css'` — loads all styles.
+- `document.getElementById('root')` — finds the `<div id="root">` in `index.html`.
+- `.render(<App />)` — draws the whole application inside that div.
 
 ---
 
-## File: `src/App.jsx` (Main UI layout and wiring)
+## 5. File: `src/App.jsx` (Main Layout)
 
 This file:
-- creates the page layout (navbar, gauge, stats, footer)
-- connects UI to the speed-test logic hook (`useSpeedTest`)
-- connects UI to history storage (`useHistory`)
+1. Calls `useSpeedTest()` to get test state and control functions.
+2. Calls `useHistory()` to get saved results.
+3. Renders all components in the right layout.
 
-### Imports
-```js
-import { useState, useMemo, useEffect } from 'react';
-import { Download, Upload, Activity, Wifi } from 'lucide-react';
-```
-- `useState`: stores “changing values” (like selected unit).
-- `useMemo`: caches a calculated value (like `maxMbps`) so it is not recomputed too much.
-- `useEffect`: run a side-effect after render (like “save history when test is done”).
-- `lucide-react`: icon library (download icon, upload icon, etc.)
+### Key code snippets
 
 ```js
-import ErrorBoundary  from './components/ErrorBoundary';
-import Navbar         from './components/Navbar';
-import GaugeChart     from './components/GaugeChart';
-...
+const {
+  phase, ping, download, upload,
+  currentSpeed, connectionInfo, error,
+  isTesting, startTest, stopTest, reset
+} = useSpeedTest();
 ```
-- These are UI components. You can think of them like LEGO blocks.
+> Picks out state values and functions from the speed test hook.
 
 ```js
-import { useSpeedTest } from './hooks/useSpeedTest';
-import { useHistory }   from './hooks/useHistory';
-import { formatSpeed, getUnitLabel, getPingColor } from './utils/formatters';
+const [unit, setUnit] = useState('mbps');
 ```
-- `useSpeedTest`: does the real measurement work and gives state like `phase`, `download`, etc.
-- `useHistory`: stores previous results in the browser.
-- formatters: help show numbers nicely.
-
-### AppContent component
-```js
-function AppContent() {
-  const { phase, ping, download, upload, currentSpeed, connectionInfo, error, isTesting, startTest, stopTest, reset } = useSpeedTest();
-```
-Beginner explanation:
-- `useSpeedTest()` returns an object with values and functions.
-- We “pick” the parts we want using `{ ... }`.
+> Tracks which unit the user selected (Mbps, MB/s, or KB/s).
 
 ```js
-  const { history, addResult, clearHistory } = useHistory();
-  const [unit, setUnit] = useState('mbps');
+useEffect(() => {
+  if (phase === 'DONE' && download !== null && upload !== null) {
+    addResult({ ping, download, upload, isp: connectionInfo?.isp || '' });
+  }
+}, [phase, ping, download, upload, connectionInfo, addResult]);
 ```
-- `history`: list of previous tests.
-- `addResult`: function to add a new result.
-- `clearHistory`: function to clear.
-- `unit`: current unit to display (Mbps, MB/s, KB/s)
-- `setUnit`: function to change unit.
+> When the test finishes (phase = DONE), save the result to history.
 
-### Saving history when done
 ```js
-  useEffect(() => {
-    if (phase === 'DONE' && download !== null && upload !== null) {
-      addResult({ ping, download, upload, isp: connectionInfo?.isp || '' });
-    }
-  }, [phase, ping, download, upload, connectionInfo, addResult]);
+const maxMbps = useMemo(() => {
+  const top = Math.max(download || 0, upload || 0, currentSpeed || 0);
+  if (top > 400) return 1000;
+  if (top > 200) return 500;
+  if (top > 80)  return 200;
+  return 100;
+}, [download, upload, currentSpeed]);
 ```
-Simple explanation:
-- `useEffect` runs after React renders.
-- If `phase` is `DONE` (meaning speed test finished) and numbers exist:
-  - we save the result into history.
-- The `[...]` array says: “run again if any of these values change”.
-
-### Choosing the gauge max scale
-```js
-  const maxMbps = useMemo(() => {
-    const top = Math.max(download || 0, upload || 0, currentSpeed || 0);
-    if (top > 400) return 1000;
-    if (top > 200) return 500;
-    if (top > 80)  return 200;
-    return 100;
-  }, [download, upload, currentSpeed]);
-```
-Simple explanation:
-- This tries to pick a nice max value for the gauge:
-  - if your speed is huge, show a bigger scale so the needle still makes sense.
-- `useMemo` caches the result unless inputs changed.
-
-### Formatting values
-```js
-  const unitLabel    = getUnitLabel(unit);
-  const displaySpeed = formatSpeed(currentSpeed, unit);
-```
-- Converts internal Mbps numbers into whichever unit user selected.
-
-### Loading indicators
-```js
-  const isLoadingDl = isTesting && ['CONNECTING','PING'].includes(phase);
-  const isLoadingUl = isTesting && ['CONNECTING','PING','DOWNLOAD'].includes(phase);
-```
-- While we are still early in the test, download/upload cards show a skeleton.
-
-### Ping label
-```js
-  const pingColor = ping !== null ? getPingColor(ping) : undefined;
-  const pingLabel = ping !== null
-    ? ping < 20 ? 'Excellent' : ping < 50 ? 'Good' : ping < 100 ? 'Fair' : 'Poor'
-    : undefined;
-```
-- Choose a color (green/blue/orange/red) based on ping.
-- Choose a label string.
-
-### JSX layout
-Everything inside `return (...)` is the UI structure.
-It is “HTML-like”, but it is JSX (React syntax).
-
-Key pieces:
-- Background layers: `.bg-canvas`, `.bg-grid`, `.bg-noise`
-- `<Navbar />`: top bar
-- Gauge section: `<GaugeChart ... />`
-- Unit toggle: `<UnitToggle ... />`
-- Button: `<TestButton ... />`
-- Stats cards: `<StatCard ... />`
-- Streaming grid: `<StreamingGrid ... />`
-- History: `<HistoryPanel ... />`
-- Footer
-
-### Final export
-```js
-export default function App() {
-  return (
-    <ErrorBoundary>
-      <AppContent/>
-    </ErrorBoundary>
-  );
-}
-```
-Simple explanation:
-- We wrap the whole app inside `ErrorBoundary`.
-- If some unexpected UI error happens, user sees a friendly fallback instead of a white screen.
+> Picks a smart maximum for the gauge scale so the needle never goes off-screen.
 
 ---
 
-## File: `src/hooks/useSpeedTest.js` (The “brain” / state machine)
+## 6. File: `src/hooks/useSpeedTest.js` (The Brain)
 
-This is the most important logic file.
-
-It controls the phases:
-`IDLE → CONNECTING → PING → DOWNLOAD → UPLOAD → DONE` (or `ERROR`)
-
-### Imports
-```js
-import { useState, useCallback, useRef } from 'react';
-import { measurePing, measureDownload, measureUpload, fetchConnectionInfo } from '../utils/speedtest';
-```
-- React hooks:
-  - `useState`: store current values
-  - `useCallback`: create stable functions (helps performance)
-  - `useRef`: store values that do not trigger a re-render
-- speedtest utils:
-  - these are the real network measurement functions.
+This is the most important file. It controls all test phases.
 
 ### State variables
+
 ```js
-const [phase, setPhase] = useState('IDLE');
-const [ping, setPing] = useState(null);
-...
+const [phase, setPhase]               = useState('IDLE');
+const [ping, setPing]                 = useState(null);
+const [download, setDownload]         = useState(null);
+const [upload, setUpload]             = useState(null);
+const [currentSpeed, setCurrentSpeed] = useState(null);
+const [connectionInfo, setConnectionInfo] = useState(null);
+const [error, setError]               = useState(null);
 ```
-Simple explanation:
-- Each `useState` creates one piece of state.
-- `phase` tells the UI what step we are doing right now.
-- `ping/download/upload` store results.
-- `currentSpeed` is live speed while testing (for gauge animation).
-- `connectionInfo` stores ISP/city/country/ip.
-- `error` stores a message if something failed.
+> Each `useState` holds one piece of data. `null` means "not measured yet".
 
-### Refs (important)
+### Refs (values that don't cause re-renders)
+
 ```js
-const abortRef = useRef(false);
-const testRunning = useRef(false);
-const controllerRef = useRef(null);
+const abortRef      = useRef(false);   // "has the user clicked Stop?"
+const testRunning   = useRef(false);   // "is a test already running?"
+const controllerRef = useRef(null);    // AbortController for cancelling fetch
 ```
-Simple explanation:
-- `useRef` values persist between renders.
-- `abortRef.current` is a simple “stop requested?” flag.
-- `testRunning.current` prevents starting two tests at once.
-- `controllerRef.current` stores an `AbortController` to cancel fetch requests.
 
-### isTesting
+### `startTest()` — simplified flow
+
 ```js
-const isTesting = ['CONNECTING', 'PING', 'DOWNLOAD', 'UPLOAD'].includes(phase);
-```
-- True when a test is running.
-
-### startTest()
-This function runs the entire test.
-
-Important steps:
-1. Do safety checks.
-2. Reset state for a fresh test.
-3. Fetch connection info.
-4. Ping.
-5. Download.
-6. Upload.
-7. Done.
-
-Key lines:
-```js
+// 1. Guard: don't start if already running
 if (testRunning.current) return;
 testRunning.current = true;
 abortRef.current = false;
-controllerRef.current?.abort();
+
+// 2. Create a fresh AbortController
 controllerRef.current = new AbortController();
 const { signal } = controllerRef.current;
-```
-- If test is already running, ignore the click.
-- Reset abort flag.
-- Abort any previous test requests (if any).
-- Make a new AbortController for this test.
-- `signal` is passed into fetch/XHR to allow cancel.
 
-Then:
-```js
-setPhase('CONNECTING');
-setPing(null);
-...
-```
-- Reset values so UI clears old results.
+// 3. Clear previous results
+setPhase('CONNECTING'); setPing(null); setDownload(null); ...
 
-Then:
-```js
+// 4. Fetch ISP info
 const [connInfo] = await Promise.all([fetchConnectionInfo(signal)]);
 setConnectionInfo(connInfo);
-```
-- Fetch ISP info and store it.
 
-Then:
-```js
+// 5. Measure ping
 setPhase('PING');
 const pingResult = await measurePing(signal);
 setPing(pingResult);
-```
-- Measure ping and store it.
 
-Then:
-```js
+// 6. Measure download
 setPhase('DOWNLOAD');
-const dlResult = await measureDownload((live) => { ... }, signal);
+const dlResult = await measureDownload((live) => {
+  setCurrentSpeed(live);
+  setDownload(live);
+}, signal);
 setDownload(dlResult);
-```
-- Measure download.
-- During measurement we update:
-  - `currentSpeed` (gauge)
-  - `download` (card live value)
 
-Then:
-```js
+// 7. Measure upload
 setPhase('UPLOAD');
-const ulResult = await measureUpload((live) => { ... }, signal);
+const ulResult = await measureUpload((live) => setCurrentSpeed(live), signal);
 setUpload(ulResult);
-setCurrentSpeed(ulResult);
 setPhase('DONE');
 ```
-- Measure upload.
-- When done, set phase to DONE.
 
-If error happens:
-```js
-setError(err.message || 'An unexpected error occurred');
-setPhase('ERROR');
-```
-- UI will show an error message and allow retry.
+### `stopTest()`
 
-Finally:
-```js
-testRunning.current = false;
-```
-- allow new tests again.
-
-### stopTest()
 ```js
 abortRef.current = true;
-controllerRef.current?.abort();
+controllerRef.current?.abort();  // cancels all pending fetch/XHR
 setPhase('IDLE');
 ```
-- Sets abort flag.
-- Cancels network requests.
-- Returns UI to IDLE.
-
-### reset()
-Like stop, but also clears results back to empty.
 
 ---
 
-## File: `src/utils/speedtest.js` (Network measurement engine)
+## 7. File: `src/utils/speedtest.js` (Network Engine)
 
-This file contains “how to measure ping/download/upload”.
+### `measurePing(signal)`
 
-### Constant
-```js
-const CF_BASE = 'https://speed.cloudflare.com';
 ```
-- Base URL for Cloudflare speed endpoints.
+- Send HEAD request to Cloudflare ping endpoint
+- Record time with performance.now() before and after
+- Repeat 5 times
+- Return the median value (ignores outliers)
+```
 
-### measurePing(signal)
-Goal: measure latency in milliseconds.
+**Why median?** A single slow sample (e.g. OS update running in background) can inflate an average by 50+ ms. Median stays stable.
 
-Important parts:
-- Take 3 samples.
-- Use `performance.now()` to measure time.
-- Use `HEAD` request first, then fallback to `GET` if needed.
-- Return the median sample.
+### `measureDownload(onProgress, signal)`
 
-Why median?
-- If one ping is weirdly high, median is more stable than average.
+```
+Stage 1 — Warm-up:
+  - Fetch 1 MB (1 stream) to fill TCP congestion window
+  - Result discarded
 
-### measureDownload(onProgress, signal)
-Goal: measure download Mbps.
+Stage 2 — Main measurement:
+  - Fetch 10 MB × 3 parallel streams simultaneously
+  - Read each response with getReader() → count bytes as they arrive
+  - Update progress at most every 100 ms (prevents UI jank)
+  - Final Mbps = (total bytes × 8) / elapsed seconds / 1,000,000
+```
 
-Important parts:
-- Use 2 stages:
-  - warm-up (1 MB, 1 stream)
-  - main (10 MB, 3 streams)
-- For each stream:
-  - fetch bytes
-  - read the response stream using `getReader()`
-  - count bytes
-- While downloading:
-  - update progress no more than once per 100ms
-  - compute live Mbps from total bytes / elapsed time
+**Why 3 streams?** Some networks cap single-connection speeds. Parallel streams better saturate fast connections.
 
-Why parallel streams?
-- Some networks/browsers do not fully use bandwidth on a single request.
-- Multiple streams can saturate faster connections better.
+### `measureUpload(onProgress, signal)`
 
-Why throttle progress updates?
-- Updating UI too often can cause lag/jank.
+```
+- Generate 5 MB random payload with crypto.getRandomValues()
+- Use XMLHttpRequest (XHR) — gives upload.onprogress events
+- POST to Cloudflare /__up (or httpbin.org as fallback)
+- If abort signal fires → call xhr.abort()
+```
 
-### measureUpload(onProgress, signal)
-Goal: measure upload Mbps.
+**Why XHR instead of fetch?** The browser's `fetch` API does not expose upload progress events. XHR does.
 
-Important parts:
-- Create 5 MB random bytes using crypto.
-- Use `XMLHttpRequest` to get `upload.onprogress` events.
-- Try Cloudflare upload; if it fails, try httpbin.
-- If abort signal triggers, call `xhr.abort()`.
+### `fetchConnectionInfo(signal)`
 
-### fetchConnectionInfo(signal)
-Goal: show ISP/country/city/IP.
-
-Important parts:
-- Cache results in `localStorage` for 6 hours.
-  - This reduces calls to ipapi and reduces chance of rate-limits.
-- If request fails:
-  - return “Unknown ISP” but do not crash the app.
+```
+- Check localStorage cache (valid for 6 hours)
+- If fresh: return cached data
+- If stale: fetch https://ipapi.co/json/
+- On error: return { isp: 'Unknown', city: '', country: '' }
+- Never crash the test — ISP info is "nice to have"
+```
 
 ---
 
-## File: `src/utils/formatters.js` (Formatting + quality score)
+## 8. File: `src/utils/formatters.js`
 
-This file is about:
-- converting Mbps to user selected unit
-- choosing ping color
-- calculating a “grade”
-- formatting timestamps
+### `formatSpeed(speedMbps, unit)`
 
-### formatSpeed(speedMbps, unit)
-- If speed is missing or negative → show `0.00`.
-- If unit is:
-  - `mbps`: return Mbps with 2 decimals.
-  - `mbs`: convert Mbps → MB/s (`Mbps / 8`)
-  - `kbs`: convert Mbps → KB/s (`(Mbps * 1000) / 8`)
+| Unit | Formula | Example (50 Mbps) |
+|---|---|---|
+| `mbps` | `speedMbps` | `50.00 Mbps` |
+| `mbs` | `speedMbps / 8` | `6.25 MB/s` |
+| `kbs` | `(speedMbps × 1000) / 8` | `6250 KB/s` |
 
-### getUnitLabel(unit)
-- Converts internal keys to labels shown on UI.
+### `calculateQualityScore(download, upload, ping)`
 
-### calculateQualityScore(download, upload, ping)
-Simple explanation:
-- Convert download/upload/ping into 0–100 “points”.
-- Combine them with weights:
-  - download 40%
-  - upload 30%
-  - ping 30%
-- Convert to a grade A+ .. F.
+```
+dl_score   = min(100, download / 100 × 100)   // 100 Mbps = full
+ul_score   = min(100, upload / 50 × 100)       // 50 Mbps = full
+ping_score = max(0, 100 - ping / 2)            // 200 ms = 0
 
-### getPingColor(ping)
-- Green for very low ping.
-- Blue for good.
-- Orange for medium.
-- Red for high.
+composite  = dl_score × 0.40 + ul_score × 0.30 + ping_score × 0.30
 
-### formatTimestamp(date)
-- Converts timestamp to a friendly date string for history list.
+Grade:  A+ ≥ 95 · A ≥ 85 · B ≥ 70 · C ≥ 55 · D ≥ 40 · F < 40
+```
+
+### `getPingColor(ping)`
+
+| Ping | Colour | Label |
+|---|---|---|
+| < 20 ms | Green | Excellent |
+| < 50 ms | Blue | Good |
+| < 100 ms | Orange | Fair |
+| ≥ 100 ms | Red | Poor |
 
 ---
 
-## File: `src/utils/quality.js` (Streaming requirements)
+## 9. File: `src/utils/quality.js`
 
-This file contains:
-- a list of streaming platforms (Netflix, YouTube, etc.)
-- what Mbps is needed for each quality tier
+Defines `STREAMING_PLATFORMS` — an array of objects:
 
-### STREAMING_PLATFORMS
-- Each entry has:
-  - `id`: internal key
-  - `name`: display name
-  - `icon`: emoji icon
-  - `tiers`: list of requirements (best first)
+```js
+{
+  id: 'netflix',
+  name: 'Netflix',
+  icon: '🎬',
+  tiers: [
+    { label: '4K Ultra HD', required: 25 },
+    { label: '1080p HD',    required: 5  },
+    { label: '720p SD',     required: 3  },
+  ]
+}
+```
 
-### getBestQuality(platform, downloadMbps)
+`getBestQuality(platform, downloadMbps)`:
 - Finds the first tier where `downloadMbps >= required`.
-- If found, return “supported”.
-- If not found, return “Not Supported”.
+- Returns that tier label (e.g., `"4K Ultra HD"`) or `"Not Supported"`.
 
 ---
 
-## File: `src/hooks/useHistory.js` (Saving history in the browser)
+## 10. File: `src/hooks/useHistory.js`
 
-This hook:
-- reads old history from `localStorage` at startup
-- updates localStorage whenever history changes
-- provides functions:
-  - addResult
-  - clearHistory
+```js
+// On startup: read existing history from localStorage
+const [history, setHistory] = useState(() => {
+  try {
+    return JSON.parse(localStorage.getItem('orbitspeed-history')) || [];
+  } catch { return []; }
+});
 
-Key ideas:
-- `localStorage` is a browser key-value storage.
-- It stores strings only, so we use `JSON.stringify` and `JSON.parse`.
-- Try/catch prevents crashes if storage is blocked (some private modes).
+// Whenever history changes: save it back
+useEffect(() => {
+  localStorage.setItem('orbitspeed-history', JSON.stringify(history));
+}, [history]);
+```
 
----
-
-## File: `src/components/Navbar.jsx`
-
-This is a simple navigation bar.
-
-It returns:
-- `<nav>` wrapper with `aria-label` for accessibility.
-- “ORBITSPEED” text.
-
-There is no logic here—only UI.
+- `addResult(result)` — prepends the new result (newest first), trims to 50 entries.
+- `clearHistory()` — resets to `[]`.
+- `try/catch` prevents crashes in private browsing mode where `localStorage` may be blocked.
 
 ---
 
-## File: `src/components/TestButton.jsx`
+## 11. File: `src/components/GaugeChart.jsx` (SVG Speedometer)
 
-This controls:
-- Start button
-- Stop button (only while testing)
-- Reset button (only when done)
+The gauge is drawn with SVG math:
 
-Important beginner idea:
-- We show/hide buttons based on `phase` and `isTesting`.
+```
+ratio       = clamp(speedMbps / maxMbps, 0, 1)
+arcLength   = π × radius               (semicircle)
+dashOffset  = arcLength × (1 - ratio)  (how much arc is "empty")
+needleAngle = 180° × ratio − 90°       (needle from left to right)
+```
 
-The label changes depending on phase:
-- CONNECTING → “Connecting…”
-- PING → “Testing Ping…”
-- DOWNLOAD → “Measuring Download…”
-- UPLOAD → “Measuring Upload…”
-- DONE → “Run Again”
-- ERROR → “Retry Test”
+- The gray track arc is always full.
+- The colored arc uses `stroke-dashoffset` to reveal only the `ratio` portion.
+- The needle is a `<line>` element rotated with CSS transform.
+- `useMemo` caches the arc length and tick mark positions — only recalculates when radius or maxMbps changes.
 
 ---
 
-## File: `src/components/GaugeChart.jsx`
+## 12. File: `src/components/StatCard.jsx`
 
-This renders the semicircle speedometer.
+Shows one metric card. States it handles:
 
-Important ideas (simple):
-- SVG is like drawing shapes using math.
-- We draw:
-  - a track arc (gray background)
-  - a filled arc (colored progress)
-  - tick marks (0%, 20%, 40%, ...)
-  - a needle (line) showing current speed ratio
-  - large text showing the number
-
-Key math:
-- `ratio = speedMbps / maxMbps` (clamped 0..1)
-- Needle angle goes from left (0%) to right (100%).
-- `strokeDashoffset` controls how much of the arc is filled.
-
-Why `useMemo`:
-- `arcLen` and tick calculations do not need to recalc on every render if inputs did not change.
+| State | What user sees |
+|---|---|
+| `loading=true` | Animated skeleton placeholder |
+| `value` present | Number + unit label |
+| `sublabel` present | Small colored quality text below (e.g., "Excellent") |
 
 ---
 
-## File: `src/components/StatCard.jsx`
+## 13. File: `src/components/TestButton.jsx`
 
-This shows one card like:
-- Ping card
-- Download card
-- Upload card
+Shows a different button based on the current phase:
 
-It can show:
-- a skeleton loader while measurement is still happening
-- a value + unit when ready
-- an optional sublabel (like ping quality “Excellent”)
-
----
-
-## File: `src/components/QualityScore.jsx`
-
-This shows the grade A/B/C… using:
-- `calculateQualityScore(download, upload, ping)`
-
-If there is no result yet, it returns `null` (show nothing).
+| Phase | Button shown | Click action |
+|---|---|---|
+| `IDLE` | "Start Speed Test" | `startTest()` |
+| `CONNECTING` | "Connecting…" (disabled) + Stop | `stopTest()` |
+| `PING` | "Testing Ping…" (disabled) + Stop | `stopTest()` |
+| `DOWNLOAD` | "Measuring Download…" + Stop | `stopTest()` |
+| `UPLOAD` | "Measuring Upload…" + Stop | `stopTest()` |
+| `DONE` | "Run Again" + Reset | `startTest()` / `reset()` |
+| `ERROR` | "Retry Test" | `reset()` + `startTest()` |
 
 ---
 
-## File: `src/components/StreamingGrid.jsx`
+## 14. File: `src/components/ErrorBoundary.jsx`
 
-This shows “Streaming Platform Support”.
+```jsx
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
 
-It takes:
-- `downloadMbps`
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
 
-It loops over `STREAMING_PLATFORMS`:
-- for each platform, it picks best quality tier
-- it shows “supported” or “not supported”
+  render() {
+    if (this.state.hasError) {
+      return <div className="error-fallback">
+        <h2>Something went wrong.</h2>
+        <button onClick={() => window.location.reload()}>Reload App</button>
+      </div>;
+    }
+    return this.props.children;
+  }
+}
+```
 
----
-
-## File: `src/components/HistoryPanel.jsx`
-
-This shows the history list.
-
-Important UI idea:
-- It is collapsible:
-  - click the header button toggles open/close.
-
-If there is no history:
-- it returns `null` (so history section is not shown at all).
-
-History entries show:
-- time
-- download
-- upload
-- ping
-- ISP
+- Wraps the entire app.
+- If any child component throws a JavaScript error during render, this catches it.
+- Shows a friendly "Reload App" button instead of a blank white screen.
+- Must be a **class component** — React Error Boundaries only work with class lifecycle methods.
 
 ---
 
-## File: `src/components/ErrorBoundary.jsx`
+## 15. File: `app.py` (Flask Backend)
 
-Beginner idea:
-- Sometimes React UI can crash due to a bug.
-- When that happens, the user sees a blank screen.
+### App setup
 
-ErrorBoundary stops that:
-- It catches errors in rendering.
-- It shows a friendly fallback UI with a “Reload App” button.
+```python
+app = Flask(__name__)
+init_db()   # creates speed_history.db and the table if they don't exist
+```
 
-This is a React class component because Error Boundaries are traditionally implemented with classes.
+### Download route — key logic
 
----
+```python
+@app.route("/api/test/download")
+def api_download():
+    total = int(request.args.get("bytes", 10_000_000))
+    total = max(1, min(total, 100_000_000))  # clamp: 1 B – 100 MB
 
-## File: `src/index.css` (Main styling)
+    def _generate():
+        sent = 0
+        while sent < total:
+            size = min(65_536, total - sent)  # 64 KB chunks
+            yield os.urandom(size)            # cryptographically random bytes
+            sent += size
 
-This file is long because it contains all CSS.
+    return Response(stream_with_context(_generate()),
+                    content_type="application/octet-stream")
+```
 
-Beginner idea:
-- CSS selects elements by class name like `.hero-card`.
-- Then it applies styling like colors, spacing, layout, etc.
+- `os.urandom()` generates random bytes — incompressible, so ISPs can't cheat.
+- `stream_with_context` keeps the Flask request context alive during streaming.
+- `65_536` (64 KB) per chunk balances throughput vs. memory usage.
 
-What the major sections do:
-- Global reset: `* { margin:0; padding:0; box-sizing:border-box }`
-- Background layers: `.bg-canvas`, `.bg-grid`, `.bg-noise`
-- Layout: `.main`, `.hero-card`, grids
-- Components styling: navbar, gauge, cards, buttons, history, footer
-- Responsive rules:
-  - `@media(max-width:768px)` for tablets/phones
-  - `@media(max-width:480px)` for very small phones
-  - `@media(min-width:1400px)` and `@media(min-width:1920px)` for large screens/TV
+### Upload route
 
-If you want, I can generate a second “CSS-only line-by-line” document too, because this one would become extremely long if we literally explain every single CSS line one-by-one.
+```python
+@app.route("/api/test/upload", methods=["POST", "OPTIONS"])
+def api_upload():
+    if request.method == "OPTIONS":      # CORS preflight
+        resp = Response("", status=204)
+        resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        return resp
+    data = request.get_data()
+    return jsonify({"received": len(data), "ok": True})
+```
 
----
+- CORS `OPTIONS` preflight is handled explicitly.
+- The raw bytes are read and counted, then discarded.
 
-## 7) Build / Tooling Files (simple explanations)
+### IP info route
 
-### File: `package.json`
-This describes:
-- project name
-- dependencies (react, lucide)
-- scripts:
-  - `npm run dev`: start dev server
-  - `npm run build`: create production build
-  - `npm run preview`: run build locally
-  - `npm run lint`: run ESLint checks
+```python
+@app.route("/api/info")
+def api_info():
+    client_ip = _get_client_ip()   # reads X-Forwarded-For header
+    data = fetch_ip_info(client_ip)
+    return _cors(jsonify(data))
+```
 
-### File: `vite.config.js`
-This tells Vite:
-- use the React plugin
-- use default Vite build settings
-
-### File: `eslint.config.js`
-This tells ESLint:
-- check `*.js` and `*.jsx`
-- ignore `dist`
-- use recommended rules + React hooks rules
-
-### File: `vercel.json`
-This tells Vercel:
-- “rewrite everything to index.html” (so SPA routes work)
-- add cache headers for assets
-- add security headers (CSP, HSTS, etc.)
-
-### File: `Dockerfile`
-This provides Docker deployment:
-- Stage 1: build with Node
-- Stage 2: serve with Nginx
-- SPA routing rule in Nginx: unknown paths redirect to `index.html`
-
-### File: `.github/workflows/deploy.yml`
-This provides CI:
-- checkout code
-- install dependencies
-- lint
-- build
-- optional vercel deploy step (commented out)
-
-### File: `public/manifest.json`
-This is PWA metadata:
-- how the app looks when “installed”
-- theme color, icons, etc.
+- `_get_client_ip()` reads `X-Forwarded-For` for proxy/Vercel environments.
+- `fetch_ip_info()` (in `speed_utils.py`) caches results per IP for 6 hours.
 
 ---
 
-## 8) Where to learn next (beginner direction)
+## 16. File: `database.py` (SQLite Layer)
 
-If you are new, focus on learning these in this order:
-1. Basic HTML (`index.html`)
-2. Basic CSS (`src/index.css`)
-3. Basic React component structure (`src/App.jsx`)
-4. React hooks (`useState`, `useEffect`) in `useSpeedTest`
-5. Network requests (`fetch`, `XHR`) in `src/utils/speedtest.js`
+Three functions:
+
+| Function | What it does |
+|---|---|
+| `init_db()` | Creates `speed_history.db` and the `speed_history` table if they don't exist |
+| `save_result(ping, download, upload, isp, city, country, ip)` | Inserts one row with the current UTC timestamp |
+| `get_history(limit=50)` | Returns rows ordered newest-first as a list of dicts |
+| `clear_history()` | `DELETE FROM speed_history` |
+
+Table schema:
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `INTEGER PRIMARY KEY AUTOINCREMENT` | Auto row ID |
+| `timestamp` | `TEXT` | ISO 8601 UTC |
+| `ping` | `REAL` | ms |
+| `download` | `REAL` | Mbps |
+| `upload` | `REAL` | Mbps |
+| `isp` | `TEXT` | ISP name |
+| `city` | `TEXT` | Approx city |
+| `country` | `TEXT` | Country name |
+| `ip` | `TEXT` | Client public IP |
 
 ---
 
-## 9) “Backend” style scaling question (10k–15k users)
+## 17. File: `speed_utils.py` (Python Logic)
 
-Because the app is static:
-- Your hosting (Vercel) serves static files and can handle huge traffic.
-- Your users’ browsers do the speed tests.
+### `calculate_quality(download, upload, ping)`
 
-But:
-- The third-party APIs may rate limit:
-  - `ipapi.co` especially.
-- If you really want enterprise scaling, you should consider:
-  - proxying ISP lookup through your own endpoint
-  - using a paid provider / API key
-  - adding your own upload endpoint (so you control limits)
+Converts raw numbers into a letter grade using weighted scoring.
+See Section 8 of the Project Report for the full formula.
 
+### `get_streaming_support(download_mbps)`
+
+Returns a list of streaming platforms with the best supported quality tier for each, based on `download_mbps`.
+
+### `fetch_ip_info(client_ip)`
+
+- Checks an in-memory `dict` cache (key = IP, value = `(data, timestamp)`).
+- If cached and < 6 hours old: returns cached data.
+- Otherwise: `GET https://ipapi.co/json/?ip={client_ip}`, caches the result.
+- On error: returns `{ "isp": "Unknown", "city": "", "country": "", "ip": client_ip }`.
+
+---
+
+## 18. Build and Tooling Files
+
+### `package.json` — npm scripts
+
+| Script | What it runs |
+|---|---|
+| `npm run dev` | `vite` — starts dev server with HMR at `localhost:5173` |
+| `npm run build` | `vite build` — compiles to `dist/` |
+| `npm run preview` | `vite preview` — serves `dist/` locally |
+| `npm run lint` | `eslint .` — checks all `.js` / `.jsx` files |
+
+### `vite.config.js`
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({ plugins: [react()] })
+```
+
+Tells Vite to use the React plugin (enables JSX transformation and React Fast Refresh HMR).
+
+### `vercel.json`
+
+- **Rewrites:** all URL paths → `index.html` so React Router works correctly.
+- **Cache headers:** `max-age=31536000, immutable` on hashed JS/CSS assets.
+- **Security headers:** `X-Frame-Options: DENY`, `HSTS`, `Permissions-Policy`.
+
+### `Dockerfile` — Two-Stage Build
+
+```dockerfile
+# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+```
+
+- Stage 1 compiles the React app.
+- Stage 2 copies only the `dist/` output into a tiny Nginx image.
+- Nginx serves the SPA with a fallback rule: any unknown path returns `index.html`.
+
+### `.github/workflows/deploy.yml` — CI Pipeline
+
+Steps:
+1. Checkout code
+2. Install Node dependencies (`npm ci`)
+3. Run linter (`npm run lint`)
+4. Run build (`npm run build`)
+5. *(Optional, commented out)* Deploy to Vercel
+
+### `public/manifest.json` — PWA Manifest
+
+Lets the browser offer "Install as App":
+- Sets app name, short name, theme color, and background color.
+- Points to icons for the home screen.
+- Sets `"display": "standalone"` so the installed app has no browser chrome.
+
+---
+
+## 19. CSS Architecture (`src/index.css` + `design-tokens.css`)
+
+### Design tokens (CSS custom properties)
+
+All visual values are defined once in `src/styles/design-tokens.css`:
+
+```css
+:root {
+  --bg-canvas:      #08090f;   /* deep space dark background */
+  --accent-cyan:    #00d4ff;   /* primary highlight color */
+  --accent-violet:  #7c3aed;   /* secondary gradient color */
+  --glass-bg:       rgba(255,255,255,.03);
+  --glass-blur:     blur(20px);
+  --space-1: 4px; --space-2: 8px; /* ... up to --space-8 */
+  --text-sm: 0.875rem; /* ... up to --text-4xl */
+}
+```
+
+**To retheme the entire app:** change only these token values. All components read from them.
+
+### Responsive breakpoints in `index.css`
+
+| Breakpoint | Target |
+|---|---|
+| `max-width: 480px` | Small phones (360 × 640) |
+| `max-width: 768px` | Tablets and large phones |
+| `min-width: 1400px` | Large desktops |
+| `min-width: 1920px` | Ultra-wide / TV screens |
+
+---
+
+## 20. Where to Learn Next (Beginner Path)
+
+If you are new to web development, study these topics in this order:
+
+1. **HTML** — `index.html` structure and meta tags
+2. **CSS** — `src/index.css` selectors, flexbox, grid, custom properties
+3. **JavaScript** — `src/utils/speedtest.js` for `fetch`, `async/await`, `getReader()`
+4. **React basics** — `src/main.jsx` and `src/App.jsx` for JSX and component structure
+5. **React hooks** — `useState`, `useEffect`, `useMemo` in `src/App.jsx`
+6. **Custom hooks** — `src/hooks/useSpeedTest.js` for state machines
+7. **Python Flask** — `app.py` for routing, `Response`, `stream_with_context`
+8. **SQLite** — `database.py` for `sqlite3`, `CREATE TABLE`, `INSERT`, `SELECT`
+
+---
+
+*OrbitSpeed v1.0.0 · May 2026*
