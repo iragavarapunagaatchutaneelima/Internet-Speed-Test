@@ -2,7 +2,7 @@
 
 A Flask-powered internet speed test dashboard with live ping, download, upload, ISP lookup, quality scoring, streaming support, and SQLite-backed test history.
 
-[Live Demo](https://internet-speed-test-gold.vercel.app/) · [Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
+[Live Demo](https://internet-speed-test-sage.vercel.app/) · [Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
 
 ## Features
 
