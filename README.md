@@ -366,28 +366,6 @@ OrbitSpeed's entire visual language is defined as CSS custom properties in `src/
 
 ---
 
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss your idea.
-
-```bash
-# 1. Fork and clone
-git clone https://github.com/<your-username>/Internet-Speed-Test.git
-cd Internet-Speed-Test
-
-# 2. Create a feature branch
-git checkout -b feature/your-amazing-feature
-
-# 3. Make your changes, then commit
-git commit -m "feat: describe your change"
-
-# 4. Push and open a Pull Request
-git push origin feature/your-amazing-feature
-```
-
-Please ensure `npm run lint` passes before submitting.
-
----
 
 ## 📚 Documentation
 
