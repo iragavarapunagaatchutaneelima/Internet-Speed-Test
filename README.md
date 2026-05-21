@@ -2,24 +2,33 @@
 
 <div align="center">
 
-![OrbitSpeed Banner](https://img.shields.io/badge/OrbitSpeed-Production%20Grade-00d4ff?style=for-the-badge&labelColor=08090f)
+![Version](https://img.shields.io/badge/version-1.0.0-00d4ff?style=for-the-badge&labelColor=08090f)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&labelColor=08090f)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&labelColor=08090f)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-Edge-F38020?style=for-the-badge&logo=cloudflare&labelColor=08090f)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge&labelColor=08090f)
+![Flask](https://img.shields.io/badge/Flask-3.0+-000000?style=for-the-badge&logo=flask&labelColor=08090f)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&labelColor=08090f)
+![License](https://img.shields.io/badge/License-MIT-22c55e?style=for-the-badge&labelColor=08090f)
 
-**A premium, futuristic, enterprise-grade internet speed test built with React and Vite.**  
-Powered by Cloudflare Edge Networks for accurate real-world measurements.
+**A premium, full-stack internet speed test application.**  
+Dual-mode architecture: standalone React SPA *or* Python Flask backend with SQLite history.  
+Powered by Cloudflare Edge for accurate real-world measurements.
 
-[Live Demo](https://internet-speed-test-livid.vercel.app/) · [Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
+[🌐 Live Demo](https://internet-speed-test-r57eutp2v.vercel.app/) · [🐛 Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [💡 Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
 
 </div>
 
 ---
 
-## 🌟 Vision
+## 🌟 Overview
 
-OrbitSpeed was designed to be more than just a speed test tool — it is a **premium real-time connectivity dashboard** that visualises your internet performance with cinematic precision. Inspired by modern enterprise monitoring platforms, it combines accurate measurement science with a futuristic dark UI aesthetic.
+**OrbitSpeed** is more than just a speed test — it is a **real-time connectivity dashboard** built for accuracy, beauty, and performance. It ships with two independent runtime modes:
+
+| Mode | Stack | Storage | Best For |
+|---|---|---|---|
+| **Frontend-only (SPA)** | React 19 + Vite 8 | `localStorage` | Static hosting on Vercel / Netlify / CDN |
+| **Full-stack (Flask)** | Python Flask 3 + SQLite | Server-side SQLite DB | Self-hosted servers, persistent multi-user history |
+
+Both modes share the same polished UI and use Cloudflare's globally distributed edge network for measurement accuracy.
 
 ---
 
@@ -27,139 +36,218 @@ OrbitSpeed was designed to be more than just a speed test tool — it is a **pre
 
 | Feature | Description |
 |---|---|
-| 🎯 **Accurate Multi-Stream Download** | 3 parallel 10 MB streams via Cloudflare Edge for precise measurements on fast connections |
-| 📡 **ISP & Location Detection** | Automatically detects your ISP name, city, country, and IP address |
-| 📊 **Real-Time Speedometer** | Premium SVG semicircular gauge with smooth GPU-accelerated arc animation |
-| ⚡ **Ping Measurement** | 3-sample median ping with visual quality indicator (Excellent / Good / Fair / Poor) |
-| 🔄 **Universal Unit Conversion** | Instantly toggle between Mbps, MB/s, and KB/s with real-time scaling across the speedometer dial (ticks), stat cards, and persistent history panel |
-| 🖱️ **Interactive Post-Test Gauge** | Click on Download or Upload stats cards after a test completes to dynamically toggle the dial focus between Download and Upload metrics |
-| 🎬 **Streaming Quality Estimator** | Platform-specific quality estimation for Netflix, YouTube, Video Calls, and Cloud Gaming |
-| 🏆 **Connection Grade (A–F)** | Weighted quality score based on download (40%), upload (30%), and ping (30%) |
-| 📜 **Persistent Test History** | Results saved to localStorage — survives page refreshes |
-| 📱 **Fully Responsive** | Pixel-perfect on mobile, tablet, laptop, desktop, and ultra-wide screens |
-| 🔒 **Security Hardened** | Content Security Policy, CORS-safe endpoints, zero vulnerabilities |
-| 🌐 **PWA Ready** | Installable as a desktop/mobile app via the browser |
+| 🎯 **Accurate Multi-Stream Download** | 3 parallel 10 MB streams via Cloudflare Edge saturate fast connections for precise Mbps readings |
+| 📡 **ISP & Location Detection** | Automatically detects ISP name, city, country, and public IP — with 6-hour caching to respect rate limits |
+| 📊 **Real-Time Speedometer** | Premium SVG semicircular gauge with GPU-accelerated `stroke-dashoffset` animation and dynamic auto-scaling |
+| ⚡ **Ping Measurement** | 5-sample median ping using `HEAD` requests, with colour-coded quality labels (Excellent / Good / Fair / Poor) |
+| 🔄 **Universal Unit Conversion** | Instantly toggle between **Mbps**, **MB/s**, and **KB/s** — scales across the dial, stat cards, and history |
+| 🖱️ **Interactive Post-Test Gauge** | Click Download or Upload stat cards after a test to toggle the speedometer focus between each metric |
+| 🎬 **Streaming Quality Estimator** | Platform-specific support check for Netflix, YouTube, Video Calls, and Cloud Gaming |
+| 🏆 **Connection Grade (A–F)** | Weighted quality score: Download 40% + Upload 30% + Ping 30% |
+| 📜 **Persistent Test History** | SPA stores results in `localStorage`; Flask mode stores them in SQLite via server-side API |
+| 📱 **Fully Responsive Design** | Pixel-perfect from 360 px mobile to 1920 px+ ultra-wide with TV-optimised typography scaling |
+| 🔒 **Security Hardened** | CSP, `X-Frame-Options`, `X-XSS-Protection`, HSTS, and `Permissions-Policy` applied — 0 `npm audit` vulnerabilities |
+| 🌐 **PWA Ready** | Installable as a native desktop or mobile app via the browser's "Add to Home Screen" |
+| ⏹️ **Cancellable Tests** | Stop a test mid-stream — `AbortController` and `xhr.abort()` ensure clean, immediate cancellation |
+| 🐳 **Docker Deployment** | Multi-stage Dockerfile (Node 20 → Nginx) serves the built SPA with gzip and SPA routing |
 
 ---
 
 ## 🛠️ Tech Stack
 
+### Frontend
+
 | Layer | Technology | Purpose |
 |---|---|---|
-| **Framework** | React 19 + Vite 8 | Ultra-fast SPA with HMR |
-| **Styling** | Vanilla CSS + Design Tokens | Scalable design system |
-| **Typography** | Inter + JetBrains Mono | Premium UI + monospaced data |
-| **Icons** | Lucide React | Consistent icon library |
-| **Speed Engine** | Cloudflare speed.cloudflare.com | Accurate edge-based measurement |
-| **IP Detection** | ipapi.co | ISP + geolocation |
-| **Visualisation** | Custom SVG | Zero-dependency speedometer |
-| **Deployment** | Vercel / Docker / Nginx | Multi-target production deploy |
-| **CI/CD** | GitHub Actions | Automated lint + build pipeline |
+| **Framework** | React 19 + Vite 8 | Ultra-fast SPA with Hot Module Replacement |
+| **Styling** | Vanilla CSS + CSS Custom Properties | Scalable design system, zero runtime overhead |
+| **Typography** | Inter + JetBrains Mono (Google Fonts) | Premium UI font + monospaced numerical data |
+| **Icons** | Lucide React | Consistent, tree-shakeable icon library |
+| **Speed Engine** | Cloudflare `speed.cloudflare.com` | Accurate edge-based download / upload / ping |
+| **IP Detection** | `ipapi.co` — client-side (SPA) or server-side (Flask) | ISP + geolocation lookup |
+| **Visualisation** | Custom SVG | Zero-dependency animated speedometer gauge |
+
+### Backend (Flask mode only)
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Web Framework** | Flask ≥ 3.0 | REST API + Jinja2 template serving |
+| **Database** | SQLite via Python `sqlite3` | Persistent test history storage |
+| **Download Streaming** | `os.urandom()` + `stream_with_context` | Streams cryptographically random bytes to client |
+| **Upload Measurement** | Raw `request.get_data()` | Receives bytes and returns confirmed byte count |
+| **Geo Lookup** | `ipapi.co` — server-side with in-memory cache | Per-client ISP / city / country lookup |
+
+### DevOps
+
+| Tool | Purpose |
+|---|---|
+| **GitHub Actions** | Automated lint + build CI pipeline on every push |
+| **Vercel** | Static SPA deployment with global edge CDN |
+| **Docker + Nginx** | Containerised self-hosted deployment (Node 20 build → Nginx serve) |
 
 ---
 
-## 📁 Folder Structure
+## 📁 Project Structure
 
 ```
 Internet-Speed-Test/
 ├── .github/
-│   └── workflows/deploy.yml     # CI/CD pipeline
+│   └── workflows/
+│       └── deploy.yml            # CI: lint → build → optional Vercel deploy
+│
 ├── public/
-│   └── manifest.json            # PWA manifest
-├── src/
+│   └── manifest.json             # PWA manifest (icons, theme, display mode)
+│
+├── src/                          # React frontend source
 │   ├── components/
-│   │   ├── ErrorBoundary.jsx    # Crash recovery UI
-│   │   ├── Navbar.jsx           # Top navigation
-│   │   ├── GaugeChart.jsx       # SVG speedometer
-│   │   ├── StatCard.jsx         # Metric display card
-│   │   ├── TestButton.jsx       # Animated CTA
-│   │   ├── UnitToggle.jsx       # Mbps/MB/s/KB/s switcher
-│   │   ├── StreamingGrid.jsx    # Platform quality grid
-│   │   ├── QualityScore.jsx     # A–F grade ring
-│   │   └── HistoryPanel.jsx     # Collapsible results history
+│   │   ├── ErrorBoundary.jsx     # Crash recovery — friendly fallback UI
+│   │   ├── Navbar.jsx            # Top navigation bar
+│   │   ├── GaugeChart.jsx        # SVG semicircle speedometer with needle
+│   │   ├── StatCard.jsx          # Metric display card (ping / download / upload)
+│   │   ├── TestButton.jsx        # Animated Start / Stop / Reset CTA button
+│   │   ├── UnitToggle.jsx        # Mbps / MB/s / KB/s unit switcher
+│   │   ├── StreamingGrid.jsx     # Platform streaming quality grid
+│   │   ├── QualityScore.jsx      # A–F grade ring with weighted score
+│   │   └── HistoryPanel.jsx      # Collapsible test results history list
 │   ├── hooks/
-│   │   ├── useSpeedTest.js      # All test state + async logic
-│   │   └── useHistory.js        # localStorage persistence
+│   │   ├── useSpeedTest.js       # State machine — orchestrates all test phases
+│   │   └── useHistory.js         # localStorage persistence for test history
 │   ├── utils/
-│   │   ├── speedtest.js         # Multi-stream download/upload/ping
-│   │   ├── formatters.js        # Unit conversion + quality score
-│   │   └── quality.js           # Streaming platform requirements
+│   │   ├── speedtest.js          # Network engine: ping / download / upload
+│   │   ├── formatters.js         # Unit conversion, quality score, ping colour
+│   │   └── quality.js            # Streaming platform requirement definitions
 │   ├── styles/
-│   │   └── design-tokens.css    # 60+ CSS custom properties
-│   ├── App.jsx                  # Root layout orchestrator
-│   ├── index.css                # Global styles + component CSS
-│   └── main.jsx                 # React entry point
-├── index.html                   # HTML shell (SEO + PWA + CSP)
-├── Dockerfile                   # Multi-stage Docker build
-├── vercel.json                  # Vercel edge config + headers
-├── vite.config.js               # Build configuration
-└── package.json
+│   │   └── design-tokens.css     # 60+ CSS custom properties (the design system)
+│   ├── App.jsx                   # Root layout: wires hooks → components → UI
+│   ├── index.css                 # Global styles + all component CSS
+│   └── main.jsx                  # React DOM entry point
+│
+├── templates/
+│   └── index.html                # Jinja2 template served by Flask
+│
+├── static/                       # Flask static assets
+│
+├── app.py                        # Flask application — all REST API routes
+├── database.py                   # SQLite helpers: init_db / save_result / get_history
+├── speed_utils.py                # Python: quality score, streaming support, IP lookup
+├── requirements.txt              # Python deps: Flask>=3.0.0, requests>=2.31.0
+│
+├── index.html                    # Vite HTML entry point (SPA mode)
+├── vite.config.js                # Vite build configuration
+├── eslint.config.js              # ESLint rules for .js / .jsx
+├── package.json                  # npm scripts and dependency manifest
+├── Dockerfile                    # Multi-stage: node:20-alpine build → nginx:stable-alpine serve
+├── vercel.json                   # Vercel SPA rewrites + cache headers + security headers
+└── docs/
+    ├── PROJECT_REPORT.md         # Full technical / academic project report
+    └── CODE_WALKTHROUGH_LINE_BY_LINE.md  # Beginner-friendly code explanation
 ```
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm 9+
-- An internet connection (the app measures your live connection)
 
-### Works on
-- Windows / macOS / Linux (Node + npm required)
-- Mobile/TV browsers supported as long as they support modern ES modules and `ReadableStream`
+| Requirement | Version | Notes |
+|---|---|---|
+| Node.js | 18+ | Required for the React / Vite frontend |
+| npm | 9+ | Bundled with Node.js |
+| Python | 3.10+ | Required **only** for Flask backend mode |
+| pip | latest | Required only for Flask backend mode |
 
-### Quick Start (Beginner-friendly)
+---
+
+### ▶ Mode 1 — Frontend-Only SPA (React + Vite)
+
+The simplest way to run OrbitSpeed. No Python required.
+
 ```bash
-npm install
-npm run dev
-```
-Open the printed local URL (typically `http://localhost:5173`).
-
-### Production Build
-```bash
-npm run build
-npm run preview
-```
-
-### Notes on accuracy
-- Speed results vary by time, Wi‑Fi quality, routing, and device performance.
-- ISP/location lookup uses a third-party API (`ipapi.co`) and is cached locally to reduce repeat calls.
-
-### 1. Clone the repository
-```bash
+# 1. Clone the repository
 git clone https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test.git
 cd Internet-Speed-Test
-```
 
-### 2. Install dependencies
-```bash
+# 2. Install npm dependencies
 npm install
-```
 
-### 3. Start the development server
-```bash
+# 3. Start the development server
 npm run dev
-# → http://localhost:5173
+# → Open http://localhost:5173
 ```
 
-### 4. Build for production
+> **Note:** In SPA mode, test history is stored in your browser's `localStorage` and the ISP lookup is fetched client-side directly from `ipapi.co`.
+
+---
+
+### ▶ Mode 2 — Full-Stack Flask Backend
+
+Run with a Python backend that owns the download/upload endpoints and persists history in SQLite.
+
 ```bash
-npm run build
-npm run preview   # preview the production build locally
+# Clone the repository (skip if already done)
+git clone https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test.git
+cd Internet-Speed-Test
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Start the Flask server
+python app.py
+# → Open http://localhost:5000
 ```
+
+**Flask REST API endpoints:**
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Renders the main SPA page via Jinja2 |
+| `GET` | `/api/test/ping` | Ultra-low-latency RTT echo (`{ ts, ok }`) |
+| `GET` | `/api/test/download?bytes=N` | Streams N random bytes (default 10 MB, max 100 MB) |
+| `POST` | `/api/test/upload` | Receives raw bytes; returns `{ received, ok }` |
+| `GET` | `/api/info` | Returns ISP / city / country / IP (6-hour server-side cache) |
+| `GET` | `/api/quality?download=&upload=&ping=` | Returns weighted letter-grade quality score |
+| `GET` | `/api/streaming?download=` | Returns streaming platform support tiers |
+| `GET` | `/api/history` | Returns up to 50 most recent results from SQLite |
+| `POST` | `/api/history` | Saves one completed test result to SQLite |
+| `DELETE` | `/api/history` | Clears all history from SQLite |
+
+---
+
+### 🔨 Production Build (SPA Mode)
+
+```bash
+npm run build    # Compiles and optimises → dist/
+npm run preview  # Serves dist/ locally for final check
+```
+
+---
+
+## 📜 Available Scripts
+
+| Script | Command | Description |
+|---|---|---|
+| Dev server | `npm run dev` | Start Vite dev server with HMR at `localhost:5173` |
+| Production build | `npm run build` | Compile + optimise → `dist/` |
+| Preview build | `npm run preview` | Serve `dist/` locally |
+| Lint | `npm run lint` | Run ESLint on all `.js` / `.jsx` files |
+| Flask server | `python app.py` | Start full-stack backend at `localhost:5000` |
 
 ---
 
 ## 🐳 Docker Deployment
 
+The `Dockerfile` uses a **two-stage build**:
+1. **Stage 1 (`node:20-alpine`)** — installs dependencies and compiles the Vite production bundle.
+2. **Stage 2 (`nginx:stable-alpine`)** — copies `dist/` and serves it with gzip compression and SPA routing (`try_files`).
+
 ```bash
-# Build the container
+# Build the Docker image
 docker build -t orbitspeed .
 
 # Run on port 80
 docker run -p 80:80 orbitspeed
 
-# With custom port
+# Run on a custom host port
 docker run -p 3000:80 orbitspeed
 ```
 
@@ -171,49 +259,45 @@ docker run -p 3000:80 orbitspeed
 # Install Vercel CLI
 npm i -g vercel
 
-# Deploy
+# Deploy to production
 vercel --prod
 ```
 
 The included `vercel.json` configures:
-- SPA client-side routing rewrites
-- Long-term asset cache headers (`max-age=31536000, immutable`)
-- Security headers (`X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`)
+- **SPA routing rewrites** — all URL paths resolve to `index.html`
+- **Long-term asset caching** — `Cache-Control: public, max-age=31536000, immutable` for hashed assets
+- **Security headers** — `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `X-XSS-Protection`, `Referrer-Policy`, `Strict-Transport-Security`, and `Permissions-Policy`
 
-### Scaling notes (10k+ concurrent users)
-- This project builds to static assets, so Vercel/CDN scaling is typically not the bottleneck.
-- Each user’s browser runs the measurement directly against third-party endpoints (Cloudflare/ipapi/httpbin).
-- If you expect large spikes, consider proxying the ISP lookup behind your own endpoint to avoid `ipapi.co` rate limits (requires a backend/edge function and possibly an API key).
-
-### Authentication (optional)
-OrbitSpeed currently runs without accounts. If you want sign-in + cloud-synced history, add an auth provider (e.g., Clerk/Auth0/NextAuth) and store results in a database. Ask before implementing because it affects hosting and data handling.
+**Scaling considerations (10 k+ concurrent users):**
+- Static assets are served by Vercel's global CDN — scales automatically.
+- Each browser performs measurements directly against Cloudflare / `ipapi.co`.
+- The main bottleneck under high load is the **`ipapi.co` free-tier rate limit** (~30 k req/month per server IP).
+- **Mitigation:** proxy the ISP lookup through your own Flask endpoint or a Vercel Edge Function, and use a paid `ipapi.co` API key.
 
 ---
 
-## 📜 Available Scripts
+## 🎨 Design System
 
-| Script | Description |
+OrbitSpeed's entire visual language is defined as CSS custom properties in `src/styles/design-tokens.css`. Components reference tokens like `var(--accent-cyan)` — retheme the app by editing only that one file.
+
+### Core Design Principles
+
+| Principle | How It Is Implemented |
 |---|---|
-| `npm run dev` | Start Vite dev server with HMR |
-| `npm run build` | Build optimised production bundle |
-| `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint on all source files |
+| **Data Clarity** | `JetBrains Mono` for all numbers; colour-coded quality indicators |
+| **Cinematic Motion** | `cubic-bezier` easing on transitions; pure CSS `stroke-dashoffset` gauge animation |
+| **Progressive Disclosure** | Stats, grade ring, and streaming grid only render once measurement data exists |
+| **Zero Clutter** | Deep-space `#08090f` background; `backdrop-filter: blur(20px)` glassmorphism panels |
 
----
+### Key Design Tokens
 
-## 🎨 UI/UX Philosophy
-
-OrbitSpeed was designed around three core principles:
-
-1. **Data Clarity** — Every metric is immediately readable at a glance, using `JetBrains Mono` for numerical data and colour-coded quality indicators.
-2. **Cinematic Motion** — Animations use `cubic-bezier` easing curves to feel physically accurate and never jarring.
-3. **Zero Clutter** — The interface reveals information progressively — stats, quality score, and streaming grid only appear when you have data to show.
-
-### Design Tokens
-The entire design system is defined as CSS custom properties in `src/styles/design-tokens.css`, making it trivial to retheme. Key values:
-- **Background**: `#08090f` deep space dark
-- **Accent Cyan**: `#00d4ff` · **Accent Violet**: `#7c3aed`
-- **Glass panels**: `rgba(255,255,255,.03)` + `backdrop-filter: blur(20px)`
+| Token | Value | Usage |
+|---|---|---|
+| `--bg-canvas` | `#08090f` | Deep space page background |
+| `--accent-cyan` | `#00d4ff` | Primary accent — gauge fill, highlights |
+| `--accent-violet` | `#7c3aed` | Secondary gradient, grade ring |
+| `--glass-bg` | `rgba(255,255,255,.03)` | Glassmorphism panel surface |
+| `--glass-blur` | `blur(20px)` | Backdrop blur for panels |
 
 ---
 
@@ -222,66 +306,111 @@ The entire design system is defined as CSS custom properties in `src/styles/desi
 | Metric | Target |
 |---|---|
 | Lighthouse Score | 95+ |
-| First Contentful Paint | < 1.2s |
-| Largest Contentful Paint | < 2.0s |
+| First Contentful Paint | < 1.2 s |
+| Largest Contentful Paint | < 2.0 s |
 | Cumulative Layout Shift | < 0.05 |
-| Bundle Size (gzipped) | ~68 KB JS + ~5 KB CSS |
+| JS Bundle (gzipped) | ~68 KB |
+| CSS Bundle (gzipped) | ~5 KB |
 
-### Optimisations Applied
-- **Upload data**: `crypto.getRandomValues()` (GPU-accelerated, non-blocking main thread)
-- **Download**: 3 parallel streams for accuracy on high-bandwidth connections
-- **Ping**: 3-sample median with `HEAD` requests to minimise overhead
-- **Fonts**: Loaded via Google Fonts CDN with `display=swap`
-- **SVG gauge**: Pure CSS `stroke-dashoffset` animation — no JavaScript animation loops
+**Key optimisations:**
+- **Upload payload** — `crypto.getRandomValues()` generates random bytes off the main thread (GPU-accelerated)
+- **Download** — 3 parallel fetch streams better saturate connections above ~100 Mbps
+- **Ping** — 5-sample median using `HEAD` requests; median discards outlier spikes
+- **Progress throttling** — gauge updates capped at 100 ms intervals to prevent React re-render jank
+- **Fonts** — Google Fonts loaded with `display=swap` to eliminate render-blocking
+- **SVG gauge** — animated with CSS `stroke-dashoffset` only — zero JavaScript animation loops
 
 ---
 
 ## 🔒 Security
 
-- **CSP meta tag** restricts scripts, styles, images, and connections to known safe origins
-- **Security headers** via `vercel.json`: `X-Frame-Options: DENY`, `X-XSS-Protection`, `Referrer-Policy`
-- **0 npm vulnerabilities** (`npm audit` clean)
-- **No user data transmitted** — all measurements are point-to-point with Cloudflare
+| Control | Detail |
+|---|---|
+| **Content Security Policy** | Restricts `script-src`, `style-src`, `font-src`, `img-src`, and `connect-src` to known safe origins |
+| **X-Frame-Options** | `DENY` — prevents the app from being embedded in any iframe (anti-clickjacking) |
+| **X-Content-Type-Options** | `nosniff` — prevents MIME-type sniffing attacks |
+| **X-XSS-Protection** | `1; mode=block` — enables browser's built-in XSS filter |
+| **HSTS** | `max-age=63072000; includeSubDomains; preload` — enforces HTTPS for 2 years |
+| **Permissions-Policy** | Disables camera, microphone, geolocation, payment, and USB APIs |
+| **0 npm vulnerabilities** | Confirmed clean via `npm audit` |
+| **No PII transmitted** | Measurements are point-to-point with Cloudflare; no data stored without explicit user action |
 
 ---
 
-## 🗺️ Future Improvements
+## 🧪 Test Cases
+
+| # | Scenario | Expected Result |
+|---|---|---|
+| 1 | **Happy path** — full test | Completes CONNECTING → PING → DOWNLOAD → UPLOAD → DONE; all metrics displayed |
+| 2 | **Stop during download** | Returns to IDLE cleanly; gauge resets to zero; no errors thrown |
+| 3 | **Stop during upload** | XHR aborted immediately; UI returns to IDLE |
+| 4 | **Network offline** | Reaches `ERROR` phase; descriptive message shown; Retry button appears |
+| 5 | **`ipapi.co` blocked** | Ping / download / upload still complete; ISP field shows "Unknown" |
+| 6 | **History persistence** | Run test → refresh page → results still visible in history panel |
+| 7 | **Unit toggle** | Switch Mbps → MB/s → KB/s: all values and gauge ticks rescale correctly |
+| 8 | **Mobile (360 × 640)** | Stats stack vertically; no horizontal scroll; gauge scales down |
+| 9 | **Ultra-wide (≥ 1920 px)** | Typography scales up; content remains centred; no stretched layouts |
+
+---
+
+## 🗺️ Roadmap
 
 - [ ] WebSocket-based real-time jitter measurement
-- [ ] Historical chart visualisation (line graph over time)
-- [ ] Multiple server location selection
-- [ ] Sharable result cards (PNG export)
-- [ ] Dark/Light theme toggle
+- [ ] Historical line-chart visualisation over time
+- [ ] Multiple test-server region selection
+- [ ] Shareable result cards (PNG export)
+- [ ] Dark / Light theme toggle
 - [ ] Electron desktop app wrapper
+- [ ] Optional authentication with cloud-synced history (Clerk / Auth0)
+- [ ] Accessibility audit — WCAG 2.1 AA (keyboard navigation, reduced-motion, high-contrast)
 
 ---
 
 ## 🤝 Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss your idea.
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'feat: add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+```bash
+# 1. Fork and clone
+git clone https://github.com/<your-username>/Internet-Speed-Test.git
+cd Internet-Speed-Test
+
+# 2. Create a feature branch
+git checkout -b feature/your-amazing-feature
+
+# 3. Make your changes, then commit
+git commit -m "feat: describe your change"
+
+# 4. Push and open a Pull Request
+git push origin feature/your-amazing-feature
+```
+
+Please ensure `npm run lint` passes before submitting.
 
 ---
 
-## 👩‍💻 Credits
+## 📚 Documentation
 
-**Developed by Neelima**
+| Document | Description |
+|---|---|
+| [`docs/PROJECT_REPORT.md`](./docs/PROJECT_REPORT.md) | Full academic / technical report: abstract → architecture → methodology → test cases → conclusion |
+| [`docs/CODE_WALKTHROUGH_LINE_BY_LINE.md`](./docs/CODE_WALKTHROUGH_LINE_BY_LINE.md) | Beginner-friendly line-by-line explanation of every source file |
 
-Built with ❤️ using React, Vite, and Cloudflare Edge Networks.
+---
+
+## 👩‍💻 Author
+
+**Developed by Neelima**  
+Built with ❤️ using React, Vite, Python Flask, and Cloudflare Edge Networks.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](./LICENSE).
 
 ---
 
 <div align="center">
-  <sub>⚡ OrbitSpeed · Built with Cloudflare Edge · 2026</sub>
+  <sub>⚡ OrbitSpeed · Full-Stack Internet Speed Test · React 19 + Flask 3 + Cloudflare Edge · 2026</sub>
 </div>
