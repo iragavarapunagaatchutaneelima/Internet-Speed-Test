@@ -13,7 +13,7 @@
 Dual-mode architecture: standalone React SPA *or* Python Flask backend with SQLite history.  
 Powered by Cloudflare Edge for accurate real-world measurements.
 
-[🌐 Live Demo](https://internet-speed-test-jg9bvljds.vercel.app/) · [🐛 Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [💡 Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
+[🌐 Live Demo](https://internet-speed-test-gold.vercel.app/) · [🐛 Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [💡 Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
 
 </div>
 
