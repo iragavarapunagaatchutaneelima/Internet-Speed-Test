@@ -92,7 +92,7 @@ function renderTicks(maxMbps, displayUnit) {
   const TICK_OUTER_R = R + 8;
   const LABEL_R      = R + 26;
 
-  [0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach((t, i) => {
+  [0, 0.2, 0.4, 0.6, 0.8, 1.0].forEach((t) => {
     const ang   = Math.PI - t * Math.PI;   // π → 0 (left to right)
     const cosA  = Math.cos(ang);
     const sinA  = Math.sin(ang);

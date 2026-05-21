@@ -1,3 +1,4 @@
+/* global Gauge, SpeedTest */
 /**
  * OrbitSpeed — UI Orchestrator (main.js) — fixed & optimised
  *
