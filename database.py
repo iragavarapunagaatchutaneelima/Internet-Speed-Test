@@ -5,11 +5,17 @@ Uses Python's built-in sqlite3 module — zero extra dependencies.
 Provides a clean CRUD interface for saving and retrieving test results.
 """
 
+import os
 import sqlite3
 import time
+import tempfile
 from contextlib import contextmanager
 
-DB_PATH = "speed_history.db"
+DB_PATH = (
+    os.path.join(tempfile.gettempdir(), "speed_history.db")
+    if os.environ.get("VERCEL")
+    else "speed_history.db"
+)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS test_results (
