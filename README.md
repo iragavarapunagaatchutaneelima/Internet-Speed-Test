@@ -11,7 +11,7 @@
 **A premium, futuristic, enterprise-grade internet speed test built with React and Vite.**  
 Powered by Cloudflare Edge Networks for accurate real-world measurements.
 
-[Live Demo](https://internet-speed-test-kohl.vercel.app/) · [Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
+[Live Demo](https://internet-speed-test-livid.vercel.app/) · [Report Bug](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues) · [Request Feature](https://github.com/iragavarapunagaatchutaneelima/Internet-Speed-Test/issues)
 
 </div>
 
