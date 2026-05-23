@@ -288,45 +288,8 @@
       <div class="streaming-cards" id="streaming-cards"></div>
     </section>
 
-    <!-- ── History panel (data from /api/history → Python SQLite) ────── -->
-    <div id="history-panel" class="history-panel" style="display:none">
-      <button id="history-toggle" class="history-toggle"
-        aria-expanded="false" aria-controls="history-body">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-          aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
-        </svg>
-        Test History
-        <span id="history-count" class="history-count">0</span>
-        <span id="history-chevron" class="history-chevron" aria-hidden="true">▾</span>
-      </button>
-
-      <div id="history-body" class="history-body" style="display:none">
-        <div class="history-actions">
-          <button id="history-clear" class="history-clear" aria-label="Clear all history">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-              <path d="M10 11v6"/><path d="M14 11v6"/>
-              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-            </svg>
-            Clear All
-          </button>
-        </div>
-        <div class="history-table" id="history-table" role="table" aria-label="Speed test history">
-          <div class="history-head" role="row">
-            <span role="columnheader">Time</span>
-            <span role="columnheader">↓ Download</span>
-            <span role="columnheader">↑ Upload</span>
-            <span role="columnheader">Ping</span>
-            <span role="columnheader">ISP</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ── History panel (React Component Mount Point) ────── -->
+    <div id="react-history-root"></div>
 
   </main>
 
@@ -349,9 +312,15 @@
 
 </div><!-- /#app -->
 
-<!-- Script load order matters: gauge → speedtest → main -->
+<!-- React & Babel for lightweight UI integration -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+<!-- Script load order matters: gauge → speedtest → main → React -->
 <script src="/static/js/gauge.js"></script>
 <script src="/static/js/speedtest.js"></script>
 <script src="/static/js/main.js"></script>
+<script type="text/babel" src="/static/js/ReactHistoryPanel.jsx"></script>
 </body>
 </html>

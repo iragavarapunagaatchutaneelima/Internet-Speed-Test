@@ -56,13 +56,7 @@ const ulSubLabel      = $('ul-sublabel');
 const dlSubLabel      = $('dl-sublabel');
 const qualityWrap     = $('quality-wrap');
 const streamingSection= $('streaming-section');
-const historyPanel    = $('history-panel');
-const historyToggle   = $('history-toggle');
-const historyCount    = $('history-count');
-const historyChevron  = $('history-chevron');
-const historyBody     = $('history-body');
-const historyClear    = $('history-clear');
-const historyTable    = $('history-table');
+// History panel DOM refs removed (now handled by React)
 const cardDl          = $('card-dl');
 const cardUl          = $('card-ul');
 
@@ -298,40 +292,10 @@ async function renderStreaming(dl) {
 }
 
 /* ── History ────────────────────────────────────────────────────────────── */
-let historyOpen = false;
-
+// History UI is now powered by React. 
+// We simply dispatch an event to tell React to refetch data.
 async function refreshHistory() {
-  const rows = await SpeedTest.loadHistory();
-  if (!historyPanel) return;
-
-  if (!rows.length) {
-    historyPanel.style.display = 'none';
-    return;
-  }
-
-  historyPanel.style.display = '';
-  historyCount.textContent   = rows.length;
-
-  if (!historyOpen) return;
-
-  // Clear all rows except header
-  const existingRows = historyTable.querySelectorAll('.history-row');
-  existingRows.forEach(r => r.remove());
-
-  const ul = UNIT_LABELS[state.unit] || 'Mbps';
-  rows.forEach(r => {
-    const row = document.createElement('div');
-    row.className = 'history-row';
-    row.setAttribute('role', 'row');
-    row.innerHTML = `
-      <span class="h-time">${fmtTimestamp(r.timestamp)}</span>
-      <span class="h-dl">${fmtSpeed(r.download)} ${ul}</span>
-      <span class="h-ul">${fmtSpeed(r.upload)} ${ul}</span>
-      <span class="h-ping">${r.ping ?? '--'} ms</span>
-      <span class="h-isp">${r.isp || '—'}</span>
-    `;
-    historyTable.appendChild(row);
-  });
+  window.dispatchEvent(new Event('historyUpdated'));
 }
 
 /* ── Unit toggle ────────────────────────────────────────────────────────── */
@@ -343,7 +307,9 @@ document.querySelectorAll('.unit-btn').forEach(unitBtn => {
     // Refresh all speed displays
     refreshGauge();
     updateStats();
-    if (historyOpen) refreshHistory();
+    // Notify React component of unit change
+    window.dispatchEvent(new CustomEvent('unitChanged', { detail: state.unit }));
+    refreshHistory();
   });
 });
 
@@ -362,22 +328,7 @@ cardUl?.addEventListener('click', () => {
 });
 
 /* ── History toggle / clear ─────────────────────────────────────────────── */
-historyToggle?.addEventListener('click', () => {
-  historyOpen = !historyOpen;
-  historyBody.style.display = historyOpen ? '' : 'none';
-  historyChevron.classList.toggle('history-chevron--open', historyOpen);
-  historyToggle.setAttribute('aria-expanded', historyOpen);
-  if (historyOpen) refreshHistory();
-});
-
-historyClear?.addEventListener('click', async () => {
-  await SpeedTest.clearHistory();
-  historyOpen = false;
-  historyBody.style.display = 'none';
-  historyChevron.classList.remove('history-chevron--open');
-  historyToggle?.setAttribute('aria-expanded', 'false');
-  await refreshHistory();
-});
+// Handled by React component entirely.
 
 /* ── Reset helper ───────────────────────────────────────────────────────── */
 function resetUI() {
